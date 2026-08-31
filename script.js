@@ -1,8 +1,10 @@
+let currentSection = "all";
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+let currentBooks = [];
+
 const searchInput=document.getElementById("search-input");
 const searchbtn=document.querySelector(".search-container button");
 
-let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-let currentBooks = [];
 const sectionTitle = document.getElementById("section-title");
 const favoritesbtn = document.getElementById("favorites-btn");
 const allbooksbtn = document.getElementById("all-books-btn");
@@ -85,35 +87,55 @@ async function searchbooks()
     
 }
 
-bookgrid.addEventListener("click",function(event)
-{
-    if(event.target.classList.contains("favorite-btn"))
-    {
-        const bookID=event.target.dataset.id;
-        const book=currentBooks.find(function(book)
-    {
-        return book.id===bookID;
-    });
-    const alreadyfav=favorites.some(function(book){return book.id===bookID;});
-    if(book&&!alreadyfav)
-    {
-        favorites.push(book);
-        localStorage.setItem("favorites",JSON.stringify(favorites));
+bookgrid.addEventListener("click", function(event) {
 
+    if (event.target.classList.contains("favorite-btn")) {
+
+        const bookID = event.target.dataset.id;
+
+        let book;
+
+        if (currentSection === "all") {
+            book = currentBooks.find(function(book) {
+                return book.id === bookID;});
+            }
+        else if (currentSection === "favorites") {
+            book = favorites.find(function(book) {
+                return book.id === bookID;});
+        }
+        const alreadyfav = favorites.some(function(book) {
+            return book.id === bookID;
+        });
+        if (book && !alreadyfav) {
+            favorites.push(book);
+        }
+        else if (alreadyfav) {
+            favorites = favorites.filter(function(favorite) {
+                return favorite.id !== bookID;
+            });
+
+        }
+        localStorage.setItem("favorites", JSON.stringify(favorites));
+        if (currentSection === "all") {
+        displaybooks(currentBooks);
+        }
+        else if (currentSection === "favorites") {
+        displaybooks(favorites);
+        }
     }
-    }
-})
+});
 
 favoritesbtn.addEventListener("click", function() {
     displaybooks(favorites);
     sectionTitle.textContent = "Favorites";
-
+    status.textContent = `${favorites.length} books`;
+    currentSection = "favorites";
 });
 
 allbooksbtn.addEventListener("click", function() {
-
+    currentSection = "all";
     displaybooks(currentBooks);
-
+    status.textContent = `${currentBooks.length} books found`;
     sectionTitle.textContent = "All Books";
 
 });
